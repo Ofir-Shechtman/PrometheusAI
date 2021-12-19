@@ -10,3 +10,6 @@ One of the most important tasks of a Kubernetes cluster admin is to constantly m
  
 While Prometheus is a very powerful monitoring system capable of high-quality real-time data gathering, it entirely lacks one important capability: predicting the expected values of future metrics. By detecting and observing repeatedly occurring patterns and trends in the monitored data and learning from them, it might be possible to not only detect abnormal conditions and situations, but also to forecast their occurrence in advance, thus providing an admin with sufficient time to prevent the possibly harmful or otherwise undesired event.
 The goal of this project is to fill this gap by implementing a predictive component for Prometheus metrics. This component will incorporate a variety of well-known time series forecasting (TSF) algorithms, based on statistical methods, deep neural networks, or their combination. It will receive as input a stream of Prometheus updates (i.e., files containing the last recorded values for the monitored metrics) and generate a stream of predicted future values for all involved metrics.
+
+## important links
+- guid to use prometheus with python [time-series get-started](https://github.com/aicoe-aiops/time-series/blob/master/docs/get-started.md)
