@@ -3,6 +3,7 @@ from PrometheusClient import PrometheusClient
 
 if __name__ == '__main__':
     pc = PrometheusClient()
-    df_all = pc.getAllMetrics(time_range=timedelta(seconds=5))
-    pass
+    for df in pc.getAllMetrics(time_range=timedelta(seconds=5)):
+        print(df)
+        # TODO: read alog's implementations to find out how we need to set the dataloader
 
