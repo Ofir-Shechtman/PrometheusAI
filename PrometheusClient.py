@@ -1,10 +1,8 @@
 from prometheus_api_client import PrometheusConnect
 from prometheus_api_client.metric_range_df import MetricRangeDataFrame
 from datetime import timedelta, datetime
+from config import OPERATE_FIRST_TOKEN, THANOS_URL
 import pandas as pd
-
-OPERATE_FIRST_TOKEN = "sha256~Cg4oQ5qOWfUWNuWisJOuEyNOsD4A6Yed-SRxG-8APKM"
-THANOS_URL = "https://thanos-query-frontend-opf-observatorium.apps.smaug.na.operate-first.cloud"
 
 
 class PrometheusClient:
@@ -25,4 +23,5 @@ class PrometheusClient:
         )
         metric_df = MetricRangeDataFrame(metric_data)
         metric_df.index = pd.to_datetime(metric_df.index.tolist(), unit="s", utc=True)
+        print(metric_df)
         return metric_df
