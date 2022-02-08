@@ -2,23 +2,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
+import datetime
 import os
-from datetime import datetime, timedelta
 import pandas as pd
-import math
 import numpy as np
-import random
 from tqdm import trange
-
-from io import BytesIO
-from urllib.request import urlopen
-from zipfile import ZipFile
-
-from math import sqrt
-from pandas import read_csv, DataFrame
 from scipy import stats
-
 import matplotlib
 
 matplotlib.use('Agg')
@@ -26,9 +15,7 @@ import matplotlib.pyplot as plt
 
 from PrometheusClient import ThanosConnect
 from prometheus_api_client import MetricsList, MetricSnapshotDataFrame
-from prometheus_api_client.utils import parse_datetime
 from datetime import timedelta
-
 
 def prep_data(data, covariates, data_start, train=True):
     # print("train: ", train)
@@ -109,17 +96,16 @@ def visualize(data, week_start):
 
 
 if __name__ == '__main__':
-
     global save_path
     save_name = 'thanos'
     name = 'noobaa-mgmt.csv'
     window_size = 192
     stride_size = 24
     num_covariates = 4
-    train_start = '2022-02-01 00:00:00'
-    train_end = '2022-02-05 00:00:00'
-    test_start = '2022-02-05 00:00:00'  # need additional 7 days as given info
-    test_end = '2022-02-05 12:00:00'
+    train_start = '2022-02-08 12:00:00'
+    train_end = '2022-02-08 12:08:00'
+    test_start = '2022-02-08 12:08:00'  # need additional 7 days as given info
+    test_end = '2022-02-08 12:10:00'
     pred_days = 7
     given_days = 7
 
@@ -128,8 +114,8 @@ if __name__ == '__main__':
         os.makedirs(save_path)
     csv_path = os.path.join(save_path, name)
     if not os.path.exists(csv_path):
-        start_time = parse_datetime("10m")
-        end_time = parse_datetime("now")
+        start_time = datetime.datetime.strptime(train_start, "%Y-%m-%d %H:%M:%S") #parse_datetime("10m")
+        end_time = datetime.datetime.strptime(test_end, "%Y-%m-%d %H:%M:%S") #parse_datetime("now")
         chunk_size = timedelta(minutes=1)
         tc = ThanosConnect()
         label_config = {'cluster': 'moc/smaug', 'job': 'noobaa-mgmt'}
@@ -144,9 +130,9 @@ if __name__ == '__main__':
         metric_df['date'] = pd.to_datetime(metric_df['timestamp'], unit='s', origin='unix')
         pivot = metric_df.pivot(index='date', columns=set(metric_df.columns) - {'timestamp', 'date', 'value'})['value']
         pivot.resample('1min', label='left', closed='right').last()
-        pivot.to_csv(csv_path, sep=";", decimal=',')
+        pivot.to_csv(csv_path)
 
-    data_frame = pd.read_csv(csv_path, sep=";", index_col=0, parse_dates=True, decimal=',')
+    data_frame = pd.read_csv(csv_path, index_col=0, parse_dates=True)
     # data_frame = data_frame.resample('1H', label='left', closed='right').sum()[train_start:test_end]
     data_frame.fillna(0, inplace=True)
     covariates = gen_covariates(data_frame[train_start:test_end].index, num_covariates)
