@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from PrometheusClient import ThanosConnect
 from prometheus_api_client import MetricsList, MetricSnapshotDataFrame
 from datetime import timedelta
+DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 def prep_data(data, covariates, data_start, train=True):
     # print("train: ", train)
@@ -114,8 +115,8 @@ if __name__ == '__main__':
         os.makedirs(save_path)
     csv_path = os.path.join(save_path, name)
     if not os.path.exists(csv_path):
-        start_time = datetime.datetime.strptime(train_start, "%Y-%m-%d %H:%M:%S") #parse_datetime("10m")
-        end_time = datetime.datetime.strptime(test_end, "%Y-%m-%d %H:%M:%S") #parse_datetime("now")
+        start_time = datetime.datetime.strptime(train_start, DATETIME_FORMAT) #parse_datetime("10m")
+        end_time = datetime.datetime.strptime(test_end, DATETIME_FORMAT) #parse_datetime("now")
         chunk_size = timedelta(minutes=1)
         tc = ThanosConnect()
         label_config = {'cluster': 'moc/smaug', 'job': 'noobaa-mgmt'}
@@ -127,10 +128,10 @@ if __name__ == '__main__':
 
         metric_object_list = MetricsList(metric_data)
         metric_df = MetricSnapshotDataFrame(metric_data)
-        metric_df['date'] = pd.to_datetime(metric_df['timestamp'], unit='s', origin='unix')
+        metric_df['date'] = pd.to_datetime(metric_df['timestamp'], origin='unix', format=DATETIME_FORMAT)
         pivot = metric_df.pivot(index='date', columns=set(metric_df.columns) - {'timestamp', 'date', 'value'})['value']
-        pivot.resample('1min', label='left', closed='right').last()
-        pivot.to_csv(csv_path)
+        r_pivot = pivot.resample('1min', label='left', closed='right', origin=start_time).last()
+        r_pivot.to_csv(csv_path, header=False)
 
     data_frame = pd.read_csv(csv_path, index_col=0, parse_dates=True)
     # data_frame = data_frame.resample('1H', label='left', closed='right').sum()[train_start:test_end]
