@@ -103,10 +103,10 @@ if __name__ == '__main__':
     window_size = 192
     stride_size = 24
     num_covariates = 4
-    train_start = '2022-02-08 12:00:00'
-    train_end = '2022-02-08 12:08:00'
-    test_start = '2022-02-08 12:08:00'  # need additional 7 days as given info
-    test_end = '2022-02-08 12:10:00'
+    train_start = '2022-02-13 12:00:00'
+    train_end = '2022-02-13 12:08:00'
+    test_start = '2022-02-13 12:08:00'  # need additional 7 days as given info
+    test_end = '2022-02-13 12:10:00'
     pred_days = 7
     given_days = 7
 
@@ -120,7 +120,6 @@ if __name__ == '__main__':
         chunk_size = timedelta(minutes=1)
         tc = ThanosConnect()
         label_config = {'cluster': 'moc/smaug', 'job': 'noobaa-mgmt'}
-        # print(json.dumps(label_config, separators=(', ', '=')))
         metric_data = tc.get_metric_range_data(metric_name='{cluster="moc/smaug", job="noobaa-mgmt"}',
                                                start_time=start_time,
                                                end_time=end_time,
@@ -128,9 +127,10 @@ if __name__ == '__main__':
 
         metric_object_list = MetricsList(metric_data)
         metric_df = MetricSnapshotDataFrame(metric_data)
-        metric_df['date'] = pd.to_datetime(metric_df['timestamp'], origin='unix', format=DATETIME_FORMAT)
+        metric_df['date'] = pd.to_datetime(metric_df['timestamp'], origin='unix', unit='s')
         pivot = metric_df.pivot(index='date', columns=set(metric_df.columns) - {'timestamp', 'date', 'value'})['value']
         r_pivot = pivot.resample('1min', label='left', closed='right', origin=start_time).last()
+        r_pivot.index.dt.strftime(DATETIME_FORMAT)
         r_pivot.to_csv(csv_path, header=False)
 
     data_frame = pd.read_csv(csv_path, index_col=0, parse_dates=True)
