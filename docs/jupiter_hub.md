@@ -3,11 +3,11 @@
 JupiterHub gives you an environment to run your project.
 Follow this [Jupiter Hub Docs](https://www.operate-first.cloud/data-science/ds-workflows/docs/setup_environment/JH_access.md) to get started
 
-## Specific Details:
+## Working on Jupiter Hub Environment:
 
 1. Access [JupyterHub](https://jupyterhub-opf-jupyterhub.apps.smaug.na.operate-first.cloud/), select log in with `operate-first` and sign in using your GitHub Account.
-2. After signing in, on the spawner page, select the `Standard Data Science (Python v3.8.6)` in the JupyterHub Notebook
-   Image section from the dropdown and select a `Large` container size and hit `Start` to start your server.
+2. After signing in, on the spawner page, you're asked to select a notebook image, select the `Standard Data Science (Python v3.8.6)`.
+3. In the `Deployment Size` section, click on the `Container Size` dropdown menu and select a `Large` container size, hit `Start` to start your server.
 3. Once your server has spawned, follow the rest of the doc to learn the basics of the server.
 
 
