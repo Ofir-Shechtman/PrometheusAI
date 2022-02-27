@@ -1,5 +1,5 @@
 # Slack
-We've opened a channel called `prometheus-ai` for questions\requests regarding Operate First. 
+We've opened a channel called `prometheus-ai` for questions\requests regarding Operate First.   
 This will server as your main communication method with the Operate First's support team.
 
 
