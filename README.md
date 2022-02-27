@@ -1,5 +1,5 @@
 # PrometheusAI
-##Table Of Contents:
+## Table Of Contents:
 1. **[Register to OperateFirst](docs/register_to_operate_first.md)**
 2. **[Connect to Slack](docs/connect_to_slack.md)**
 3. **[JupiterHub](docs/jupiter_hub.md)**
