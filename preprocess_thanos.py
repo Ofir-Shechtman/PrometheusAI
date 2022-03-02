@@ -1,50 +1,43 @@
-import datetime
-import os
 import pandas as pd
-
-from thanos_api_client import ThanosConnect
-from prometheus_api_client import MetricsList, MetricSnapshotDataFrame
+from prometheus_api_client import PrometheusApiClientException
 from datetime import timedelta
+from prometheus_api_client import MetricSnapshotDataFrame
 from config import OPERATE_FIRST_TOKEN, THANOS_URL
-DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+from thanos_api_client import ThanosConnect
+import datetime
 
 
-def load_to_dataframe():
+
+# example of use:
+if __name__ == '__main__':
     tc = ThanosConnect(THANOS_URL, OPERATE_FIRST_TOKEN)
     label_config = {'cluster': 'moc/smaug', 'job': 'noobaa-mgmt'}
-    start_time = datetime.datetime.strptime('2022-02-19 22:00:00', DATETIME_FORMAT)
-    end_time = datetime.datetime.strptime('2022-02-22 22:30:00', DATETIME_FORMAT)
-    metric_data = tc.range_query(label_config=label_config, start_time=start_time, end_time=end_time, step="300")
-    return MetricSnapshotDataFrame(metric_data)
+    csv_path = 'noobaa-mgmt.csv'
+    step = 60
+    clusters = tc.query_label_values(label='cluster')
+    if label_config['cluster'] not in clusters:
+        raise Exception(f'Cluster {label_config["cluster"]} not found. Try one of: {clusters}')
+    jobs = tc.query_label_values(label='job', cluster=label_config["cluster"])
+    if label_config['job'] not in jobs:
+        raise Exception(f'Cluster {label_config["job"]} not found in cluster {label_config["cluster"]}. Try one of: {jobs}')
 
-
-
-if __name__ == '__main__':
-    global save_path
-    save_name = 'thanos'
-    name = 'noobaa-mgmt.csv'
-
-
-    save_path = os.path.join('data', save_name)
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-    csv_path = os.path.join(save_path, name)
-    if not os.path.exists(csv_path):
-        start_time = datetime.datetime.strptime(train_start, DATETIME_FORMAT)  # parse_datetime("10m")
-        end_time = datetime.datetime.strptime(test_end, DATETIME_FORMAT)  # parse_datetime("now")
-        chunk_size = timedelta(minutes=1)
-        tc = ThanosConnect()
-        # label_config = {'cluster': 'moc/smaug', 'job': 'noobaa-mgmt'}
-        metric_data = tc.get_metric_range_data(metric_name='{cluster="moc/smaug", job="noobaa-mgmt"}',
+    start_time = datetime.datetime.strptime('2022-03-02 14:00:00', "%Y-%m-%d %H:%M:%S")
+    end_time = datetime.datetime.strptime('2022-03-02 16:30:00', "%Y-%m-%d %H:%M:%S")
+    try:
+        metric_data = tc.range_query(metric_name="NooBaa_BGWorkers_nodejs_active_handles",label_config=label_config, start_time=start_time, end_time=end_time, step=step)
+    except PrometheusApiClientException as e:
+        print(f"this is my exception {e}")
+        if e.args[0] != 'HTTP Status Code 400 (b\'exceeded maximum resolution of 11,000 points per timeseries. Try decreasing the query resolution (?step=XX)\')':
+            raise e
+        chunk_size = timedelta(seconds=step)
+        metric_data = tc.get_metric_range_data(metric_name=tc.dict_to_match_query(label_config),
                                                start_time=start_time,
                                                end_time=end_time,
                                                chunk_size=chunk_size)
-
-        metric_object_list = MetricsList(metric_data)
-        metric_df = MetricSnapshotDataFrame(metric_data)
-        metric_df['date'] = pd.to_datetime(metric_df['timestamp'], origin='unix', unit='s')
-        pivot = metric_df.pivot(index='date', columns=set(metric_df.columns) - {'timestamp', 'date', 'value'})['value']
-        r_pivot = pivot.resample('1min', label='left', closed='right', origin=start_time).last()
-        # r_pivot.index = r_pivot.index.strftime(DATETIME_FORMAT)
-        r_pivot.to_csv(csv_path, header=False)
-
+    if not metric_data:
+        raise Exception("Got Empty results")
+    metric_df = MetricSnapshotDataFrame(metric_data)
+    metric_df['date'] = pd.to_datetime(metric_df['timestamp'], origin='unix', unit='s')
+    pivot = metric_df.pivot(index='date', columns=set(metric_df.columns) - {'timestamp', 'date', 'value'})['value']
+    r_pivot = pivot.resample(timedelta(seconds=step), label='left', closed='right', origin=start_time).last()
+    r_pivot.to_csv(csv_path, header=False)
