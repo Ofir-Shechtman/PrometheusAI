@@ -3,7 +3,8 @@ from prometheus_api_client import PrometheusConnect, PrometheusApiClientExceptio
 from prometheus_api_client.metric_range_df import MetricRangeDataFrame
 from datetime import timedelta, datetime
 from prometheus_api_client import MetricsList, MetricSnapshotDataFrame
-from config import OPERATE_FIRST_TOKEN, THANOS_URL
+from typing import Sequence
+from pandas import DataFrame
 import datetime
 
 
@@ -14,10 +15,10 @@ class ThanosConnect(PrometheusConnect):
                          disable_ssl=False)
 
     @staticmethod
-    def dict_to_match_query(labels_config: dict):
+    def build_query(labels_config: dict, metric_name: str = ''):
         if labels_config:
             label_list = [f'{key}="{val}"' for key, val in labels_config.items()]
-            return f'{{{",".join(label_list)}}}'
+            return f'{metric_name}{{{",".join(label_list)}}}'
         else:
             return ''
 
@@ -31,10 +32,11 @@ class ThanosConnect(PrometheusConnect):
     label_config - the labels of the metrics we query upon. (Additional parameters for filtering the query) 
     :reference https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries
     """
+
     def range_query(self, start_time: datetime, end_time: datetime, step: int, metric_name='',
                     label_config: dict = None):
-        query = metric_name + self.dict_to_match_query(label_config)
-        print(query) #todo remove this when done
+        query = self.build_query(label_config, metric_name)
+        print(query)  # todo remove this when done
         metric_data = self.custom_query_range(query=query,
                                               start_time=start_time,
                                               end_time=end_time,
@@ -44,9 +46,10 @@ class ThanosConnect(PrometheusConnect):
     """
     :reference: https://prometheus.io/docs/prometheus/latest/querying/api/#querying-label-values 
     """
+
     def query_label_values(self, label: str, cluster: str = None):
         if cluster:
-            match = {'match[]': self.dict_to_match_query({'cluster': cluster})}
+            match = {'match[]': self.build_query({'cluster': cluster})}
         else:
             match = None
         response = self._session.get(
@@ -64,6 +67,18 @@ class ThanosConnect(PrometheusConnect):
 
         return data
 
+    @staticmethod
+    def metric_data_to_df(data):
+        def _get_values(metric: dict):
+            return metric["values"] if "values" in metric else [metric["value"]]
 
+        if data is not None:
+            # if just a single json instead of list/set/other sequence of jsons,
+            # treat as list with single entry
+            if not isinstance(data, Sequence):
+                data = [data]
 
-
+            # unpack metric
+            unpack = [{**i["metric"], **{"timestamp": val[0], "value": val[1]}}
+                      for i in data for val in _get_values(i)]
+            return DataFrame(unpack)
