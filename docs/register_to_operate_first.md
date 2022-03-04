@@ -13,3 +13,5 @@ That's it once your PR is approved you are registered to operate first systems a
 * Generate `Personal Access Token` for fetching prometheus metrics
 * Get a JupiterHub node for running your jobs.
 * Make more requests regarding storage, etc.
+
+**Note: You can find examples of previously accepted merge requests under [Useful Links](useful_links.md) section 3**

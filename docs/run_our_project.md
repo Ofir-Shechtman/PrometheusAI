@@ -17,7 +17,7 @@
     * `build_query` - A query for the Thanos server consists of two parts - metrics name and labels config. This method formulates a valid query for the server based on the given labels-config and metrics-name.
     * `range_query` our custom built-in function that queries the server (usage example is provided in `preprocess_thanos.py`)  
     * `metric_data_to_df` - A parser method that converts the received metric data into Pandas Dataframe object.  
-    * `query_label_values` - Returns all possible values of a given label. We implemented this function based on the official documentation. For more information can check this[link](https://prometheus.io/docs/prometheus/latest/querying/api/#querying-label-values)   
+    * `query_label_values` - Returns all possible values of a given label. We implemented this function based on the official documentation. For more information can check this [link](https://prometheus.io/docs/prometheus/latest/querying/api/#querying-label-values)   
 
 
 
