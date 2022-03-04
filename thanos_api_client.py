@@ -1,9 +1,4 @@
-import pandas as pd
 from prometheus_api_client import PrometheusConnect, PrometheusApiClientException
-from prometheus_api_client.metric_range_df import MetricRangeDataFrame
-from datetime import timedelta, datetime
-from prometheus_api_client import MetricsList, MetricSnapshotDataFrame
-from config import OPERATE_FIRST_TOKEN, THANOS_URL
 import datetime
 
 
@@ -34,7 +29,7 @@ class ThanosConnect(PrometheusConnect):
     def range_query(self, start_time: datetime, end_time: datetime, step: int, metric_name='',
                     label_config: dict = None):
         query = metric_name + self.dict_to_match_query(label_config)
-        print(query) #todo remove this when done
+        print(query)  # todo remove this when done
         metric_data = self.custom_query_range(query=query,
                                               start_time=start_time,
                                               end_time=end_time,
@@ -42,6 +37,7 @@ class ThanosConnect(PrometheusConnect):
         return metric_data
 
     """
+    :returns all possible values of for a given label
     :reference: https://prometheus.io/docs/prometheus/latest/querying/api/#querying-label-values 
     """
     def query_label_values(self, label: str, cluster: str = None):

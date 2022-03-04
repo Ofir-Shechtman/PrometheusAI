@@ -5,7 +5,7 @@
 3. **[JupiterHub](docs/jupiter_hub.md)**
 4. **[Intro to Prometheus Client](https://github.com/aicoe-aiops/time-series/blob/master/docs/get-started.md)**
 5. **[Generate Personal access token](https://www.operate-first.cloud/apps/content/observatorium/thanos/thanos_programmatic_access.html)**
-6. **[How to run our project]()**
+6. **[How to run our project](docs/run_our_project.md)**
 7. **[Other useful links](docs/useful_links.md)**
 
 ## Predicting the Future Prometheus Metrics of a Kubernetes Cluster
