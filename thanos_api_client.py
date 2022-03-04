@@ -24,7 +24,7 @@ class ThanosConnect(PrometheusConnect):
     start_time - Start time for the range of the query over the selected metrics
     end_time - End time for the range of the query over the selected metrics
     step - The steps in time between each sample to align the range according to the step's resolution.
-    metric_name - The metrics that we want to get from our sensor and we query upon. Can have more than one metric value. 
+    metric_name - The metrics that we want to get from our sensor and we query upon. Can have more than one metric value 
     label_config - the labels of the metrics we query upon. (Additional parameters for filtering the query) 
     :reference https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries
     """
@@ -32,7 +32,6 @@ class ThanosConnect(PrometheusConnect):
     def range_query(self, start_time: datetime, end_time: datetime, step: int, metric_name='',
                     label_config: dict = None):
         query = self.build_query(label_config, metric_name)
-        print(query)  # todo remove this when done
         metric_data = self.custom_query_range(query=query,
                                               start_time=start_time,
                                               end_time=end_time,

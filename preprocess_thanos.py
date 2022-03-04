@@ -1,9 +1,21 @@
 import pandas as pd
+from matplotlib import pyplot as plt
 from prometheus_api_client import PrometheusApiClientException
 from datetime import timedelta
 from config import OPERATE_FIRST_TOKEN, THANOS_URL
 from thanos_api_client import ThanosConnect
 import datetime
+
+
+def show_graph(metric_df):
+    x = metric_df['date']
+    y = metric_df['value']
+    y_label = metric_df['__name__'][0] if not metric_df['__name__'].empty else ""
+    plt.scatter(x, y, s=2.0)
+    plt.locator_params(axis="y", nbins=20)
+    plt.xlabel('Date GMT+0')
+    plt.ylabel(y_label)
+    plt.show()
 
 
 def export_to_csv(metric_df, csv_path: str, start_time: datetime):
@@ -15,7 +27,6 @@ def export_to_csv(metric_df, csv_path: str, start_time: datetime):
 def start_preprocessing(label_config: dict, start_time: datetime, end_time: datetime, step: int):
     """
     Saves the desired Prometheus data according to the label_config into a csv file based on the csv_path
-    :param csv_path: path for saving the csv
     :param label_config: Metric names we query the server upon
     :param start_time: The query's start time
     :param end_time: The query's end time
@@ -51,12 +62,15 @@ def start_preprocessing(label_config: dict, start_time: datetime, end_time: date
 
 # usage example:
 if __name__ == '__main__':
+    # initialize arguments
     _csv_path = 'noobaa-mgmt.csv'
     _label_config = {'cluster': 'moc/smaug', 'job': 'noobaa-mgmt'}
     _start_time = datetime.datetime.strptime('2022-03-02 14:00:00', "%Y-%m-%d %H:%M:%S")
-    _end_time = datetime.datetime.strptime('2022-03-02 16:30:00', "%Y-%m-%d %H:%M:%S")
+    _end_time = datetime.datetime.strptime('2022-03-02 14:03:00', "%Y-%m-%d %H:%M:%S")
     _step = 60  # seconds
+    # fetch the data
     _metric_df = start_preprocessing(_label_config, _start_time, _end_time, _step)
+    # export to csv
     export_to_csv(_metric_df, _csv_path, _start_time)
-
-
+    # show graph
+    show_graph(_metric_df)
