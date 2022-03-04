@@ -16,8 +16,8 @@
 * **visualizer.py** - Plots the data into a nice graph
 * **thanos_api_client** - Consists of the wrapper methods we built over the Prometheus client.  
     `range_query` our custom built-in function that queries the server (usage example is provided in `preprocess_thanos.py`)
-    `metric_data_to_df` -   
-
+    `metric_data_to_df` - A parser method that converts the received metric data into Pandas Dataframe object.
+    `query_label_values` - Returns all possible values of a given label. We implemented this function based on the official documentation. For more information can check this[link](https://prometheus.io/docs/prometheus/latest/querying/api/#querying-label-values) 
 
 
 
