@@ -1,18 +1,17 @@
 import pandas as pd
 from prometheus_api_client import PrometheusApiClientException
 from datetime import timedelta
-from prometheus_api_client import MetricSnapshotDataFrame
 from config import OPERATE_FIRST_TOKEN, THANOS_URL
 from thanos_api_client import ThanosConnect
 import datetime
 
 
-def export_to_csv(data, dst: str, start_time: datetime):
-    metric_df = MetricSnapshotDataFrame(data)
+def export_to_csv(data, csv_path: str, start_time: datetime):
+    metric_df = ThanosConnect.metric_data_to_df(data)
     metric_df['date'] = pd.to_datetime(metric_df['timestamp'], origin='unix', unit='s')
     pivot = metric_df.pivot(index='date', columns=set(metric_df.columns) - {'timestamp', 'date', 'value'})['value']
     r_pivot = pivot.resample(timedelta(seconds=60), label='left', closed='right', origin=start_time).last()
-    r_pivot.to_csv(dst, header=False)
+    r_pivot.to_csv(csv_path, header=True)
 
 
 def start_preprocessing(csv_path: str, label_config: dict, start_time: datetime, end_time: datetime, step: int):
@@ -30,19 +29,16 @@ def start_preprocessing(csv_path: str, label_config: dict, start_time: datetime,
         raise Exception(f'Cluster {label_config["cluster"]} not found. Try one of: {clusters}')
     jobs = tc.query_label_values(label='job', cluster=label_config["cluster"])
     if label_config['job'] not in jobs:
-        raise Exception(
-            f'Cluster {label_config["job"]} not found in cluster {label_config["cluster"]}. Try one of: {jobs}')
+        raise Exception(f'Cluster {label_config["job"]} not found in cluster {label_config["cluster"]}. Try one of: {jobs}')
 
     try:
-        metric_data = tc.range_query(metric_name="NooBaa_BGWorkers_nodejs_active_handles", label_config=label_config,
-                                     start_time=start_time, end_time=end_time, step=step)
+        metric_data = tc.range_query(metric_name="NooBaa_BGWorkers_nodejs_active_handles", label_config=label_config, start_time=start_time, end_time=end_time, step=step)
     except PrometheusApiClientException as e:
         print(f"this is my exception {e}")
-        if e.args[0] != 'HTTP Status Code 400 (b\'exceeded maximum resolution of 11,000 points per timeseries.' \
-                        ' Try decreasing the query resolution (?step=XX)\')':
+        if e.args[0] != 'HTTP Status Code 400 (b\'exceeded maximum resolution of 11,000 points per timeseries. Try decreasing the query resolution (?step=XX)\')':
             raise e
         chunk_size = timedelta(seconds=step)
-        metric_data = tc.get_metric_range_data(metric_name=tc.dict_to_match_query(label_config),
+        metric_data = tc.get_metric_range_data(metric_name=tc.build_query(label_config),
                                                start_time=start_time,
                                                end_time=end_time,
                                                chunk_size=chunk_size)
