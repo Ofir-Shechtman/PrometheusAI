@@ -6,15 +6,13 @@ from thanos_api_client import ThanosConnect
 import datetime
 
 
-def export_to_csv(data, csv_path: str, start_time: datetime):
-    metric_df = ThanosConnect.metric_data_to_df(data)
-    metric_df['date'] = pd.to_datetime(metric_df['timestamp'], origin='unix', unit='s')
+def export_to_csv(metric_df, csv_path: str, start_time: datetime):
     pivot = metric_df.pivot(index='date', columns=set(metric_df.columns) - {'timestamp', 'date', 'value'})['value']
     r_pivot = pivot.resample(timedelta(seconds=60), label='left', closed='right', origin=start_time).last()
     r_pivot.to_csv(csv_path, header=True)
 
 
-def start_preprocessing(csv_path: str, label_config: dict, start_time: datetime, end_time: datetime, step: int):
+def start_preprocessing(label_config: dict, start_time: datetime, end_time: datetime, step: int):
     """
     Saves the desired Prometheus data according to the label_config into a csv file based on the csv_path
     :param csv_path: path for saving the csv
@@ -45,7 +43,10 @@ def start_preprocessing(csv_path: str, label_config: dict, start_time: datetime,
     if not metric_data:
         raise Exception("Got empty results")
 
-    return metric_data
+    metric_df = tc.metric_data_to_df(metric_data)
+    metric_df['date'] = pd.to_datetime(metric_df['timestamp'], origin='unix', unit='s')
+
+    return metric_df
 
 
 # usage example:
@@ -55,7 +56,7 @@ if __name__ == '__main__':
     _start_time = datetime.datetime.strptime('2022-03-02 14:00:00', "%Y-%m-%d %H:%M:%S")
     _end_time = datetime.datetime.strptime('2022-03-02 16:30:00', "%Y-%m-%d %H:%M:%S")
     _step = 60  # seconds
-    _metric_data = start_preprocessing(_csv_path, _label_config, _start_time, _end_time, _step)
-    export_to_csv(_metric_data, _csv_path, _start_time)
+    _metric_df = start_preprocessing(_label_config, _start_time, _end_time, _step)
+    export_to_csv(_metric_df, _csv_path, _start_time)
 
 

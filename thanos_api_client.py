@@ -1,8 +1,4 @@
-import pandas as pd
 from prometheus_api_client import PrometheusConnect, PrometheusApiClientException
-from prometheus_api_client.metric_range_df import MetricRangeDataFrame
-from datetime import timedelta, datetime
-from prometheus_api_client import MetricsList, MetricSnapshotDataFrame
 from typing import Sequence
 from pandas import DataFrame
 import datetime

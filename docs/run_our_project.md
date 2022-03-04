@@ -13,7 +13,10 @@
 
 ### Running our script:
 * **preprocess_thanos.py** - configure the arguments of `start_preprocessing` method and run preprocess_thanos.py
-* **visualizer.py** - 
+* **visualizer.py** - Plots the data into a nice graph
+* **thanos_api_client** - Consists of the wrapper methods we built over the Prometheus client.  
+    `range_query` our custom built-in function that queries the server (usage example is provided in `preprocess_thanos.py`)
+    `metric_data_to_df` -   
 
 
 
